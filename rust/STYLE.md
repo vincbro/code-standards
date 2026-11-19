@@ -269,14 +269,24 @@ Most structs are the stateful kind, so the default is private fields. A struct n
 Every stateful type (S-FIELDS) keeps its invariants in three places:
 
 - **Stated.** Its doc comment lists them, the way `View`'s does: what holds after every public call.
-- **Checked.** A private `check_invariants` asserts them. It does nothing in release builds (`if !cfg!(debug_assertions) { return; }`), every public method that mutates calls it before returning, and its messages state the rule that should have held, not the failure (S-PANICS). A type whose state spans other stateful types, like `Editor` over its views and overlay, calls their checks too.
-- **Fuzzed.** A property test drives the type with random sequences of its public calls and runs the check after every call. It uses a fixed seed or a shrinking property-test runner, so a failure reproduces from the printed case. The sequences include the awkward inputs: empty, one-cell and huge areas, offsets past the end, wide and zero-width glyphs, and resizes in the middle of a sequence.
+- **Checked.** A `check_invariants` asserts them.
+  - It is private, and `pub(crate)` when the type that holds this one calls it. A type whose state spans other stateful types, like `Editor` over its views and overlay, calls their checks too.
+  - It does nothing in release builds (`if !cfg!(debug_assertions) { return; }`), and every public method that can change what the invariants cover calls it before returning. A method that can fail calls it on the failing path too: a bad file or input leaves the state consistent.
+  - Its messages state the rule that should have held, not the failure (S-PANICS).
+  - A check that costs as much as the data is long, such as comparing two big texts, is skipped past a size and not dropped.
+  - A method that hands out `&mut` to a part (`fn part_mut(&mut self) -> &mut Part`) lets a caller change it without the check running. Give the type a method for each thing callers do instead, or list the accessor as a known hole.
+- **Fuzzed.** A property test in a `fuzz.rs` beside the type, declared `#[cfg(test)] mod fuzz;`, drives the type with random sequences of its public calls and runs the check after every call.
+  - It uses a shrinking property-test runner (`proptest`), so a failure reproduces from a minimal case, and the cases it saved are committed so they run every time.
+  - Its strategies are `pub(crate)`, so the fuzz tests of other types reuse the same awkward inputs: empty, one-cell and huge areas, offsets past the end, wide, combining and zero-width glyphs, invalid input, and resizes in the middle of a sequence.
+  - Where a plain model exists (a `String` for a text buffer), the same calls go to it and the results are compared. The invariants say the state is consistent, and the model says it is right.
+  - Before a passing test is trusted it is shown to fail: break the code on purpose once, such as skipping a flag, and see the test catch it.
+  - A case that is slow to set up reuses the setup, in a `thread_local`, and one that is slow to run takes a fraction of the configured cases and says so. How many cases run is the project's to set: few for the everyday gate, many for the full one (see `STANDARDS.local.md`).
 
 A type with no invariant to state is plain data, and S-FIELDS says it should look like it.
 
-*Why:* private fields only promise that the type *can* keep its state consistent. The check says when it didn't, and the fuzzing finds the call sequence that breaks it, which hand-written tests, written by the person who also wrote the code, don't think of. The doc comment is what the next change reads before touching the type.
+*Why:* private fields only promise that the type *can* keep its state consistent. The check says when it didn't, and the fuzzing finds the call sequence that breaks it, which hand-written tests, written by the person who also wrote the code, don't think of. The model catches what is consistent but wrong, and the deliberate failure catches a check that can't fire. The doc comment is what the next change reads before touching the type.
 
-*Enforced:* review. It checks that every stateful struct documents its invariants, has `check_invariants` called from its mutating methods, and has a fuzz test.
+*Enforced:* review. It checks that every stateful struct documents its invariants, has `check_invariants` called from its mutating methods and failing paths, and has a fuzz test.
 
 ### S-VISIBILITY: The narrowest visibility that works
 
@@ -350,7 +360,7 @@ Put it on the smallest item that needs it, never at the crate level. A workspace
 
 - Unit tests live at the bottom of the file they test, in `#[cfg(test)] mod tests { use super::*; … }`. They cover exact edge cases, like wrapping and grapheme handling.
 - Integration tests live in each crate's `tests/` folder. They drive the public API the way a user does (for an editor: keys in, frame out).
-- A stateful type also has a property test that fuzzes it against its invariants (S-INVARIANTS).
+- A stateful type also has a property test in its own `fuzz.rs` that fuzzes it against its invariants (S-INVARIANTS).
 - Test names describe the behavior, with no `test_` prefix: `wide_glyph_wraps_whole`.
 - An assertion's message says what the case means: `assert_eq!(a, b, "snaps into the grapheme start")`.
 - `unwrap` and `panic!` are fine in tests.

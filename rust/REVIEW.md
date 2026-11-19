@@ -60,10 +60,11 @@ Go through every rule in `STYLE.md` whose *Enforced* line includes "review". Re-
 
 **S-INVARIANTS**
 - A stateful struct whose doc comment doesn't state what holds after every public call.
-- No `check_invariants`, or one that isn't debug-only, or a mutating public method that doesn't call it before returning.
-- A check whose assertion messages describe the failure instead of the rule that should have held.
-- A type that holds other stateful types but whose check doesn't call theirs.
-- No property test driving random public-call sequences with the check after each call, or one with no fixed seed or shrinking, or without the awkward inputs (empty, huge, past-the-end, wide or zero-width glyphs, mid-sequence resizes).
+- No `check_invariants`, or one that isn't debug-only, or a public method that can change what it covers and doesn't call it before returning, including on its failing paths.
+- A check whose assertion messages describe the failure instead of the rule that should have held, or one that costs as much as the data is long and isn't gated by a size.
+- A type that holds other stateful types but whose check doesn't call theirs, or a `&mut` accessor to a part that lets a caller bypass the check.
+- No property test in a `fuzz.rs` driving random public-call sequences with the check after each call, one with no shrinking or no committed saved cases, or one without the awkward inputs (empty, huge, past-the-end, wide or zero-width glyphs, invalid input, mid-sequence resizes).
+- A plain model that exists (a `String` for a text buffer) and isn't compared against, or a test never shown to fail.
 
 **S-ERRORS / S-ERROR-TEXT**
 - A module that can fail without `foo/error.rs` holding `pub enum Error` and `pub type Result<T>`, both re-exported.
@@ -100,7 +101,7 @@ Go through every rule in `STYLE.md` whose *Enforced* line includes "review". Re-
 
 **S-TESTS**
 - Behavior changes without a test.
-- Tests not in `mod tests` at the bottom of the file.
+- Tests not in `mod tests` at the bottom of the file, apart from a type's property test, which is in its `fuzz.rs`.
 - New behavior observable through the public API with no integration test.
 - Assertions without a message saying what the case means, where it isn't obvious.
 

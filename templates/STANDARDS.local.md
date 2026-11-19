@@ -5,6 +5,7 @@ What is specific to this project. The shared rules are in `code-standards/`. Whe
 ## Commands
 
 - **Gate** (must pass before any change is done):
+- **Full gate** (the gate with every property test run for many cases, for after touching a stateful type; leave out if there is none):
 - **Commit-message check** (takes a message file; leave out if there is none):
 - **Benchmarks** (for P-MEASURE):
 
