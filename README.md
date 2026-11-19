@@ -12,6 +12,9 @@ code-standards/
     REVIEW.md                # how to review Rust: style + performance
     STYLE.md                 # S-… rules
     PERFORMANCE.md           # P-… rules
+  typescript/
+    REVIEW.md                # how to review TypeScript
+    STYLE.md                 # T-… rules
   skills/
     review/SKILL.md          # static router: files → language REVIEW.md
     review/scope.md          # what a review argument means
