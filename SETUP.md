@@ -42,4 +42,4 @@ Use the `review` skill to review a change and the `commit` skill to commit. Run 
 
 ## 5. Staying current
 
-At the start of a task that touches the skills, compare the marker with `git -C code-standards rev-parse HEAD:skills`. If they differ, the installed skills are stale: redo step 2 and update the marker. The person bumps the rules with `git submodule update --remote code-standards` and commits the new pin.
+`review` checks for a newer `code-standards` at the start of every run and offers to update. To check or update by hand, follow `code-standards/UPDATE.md`. The installed skills are stale when the marker differs from `git -C code-standards rev-parse HEAD:skills`: redo step 2 and update the marker.

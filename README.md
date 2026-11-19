@@ -7,7 +7,9 @@ One place for the coding rules and the agent skills that enforce them, shared by
 ```
 code-standards/
   SETUP.md                   # agent-facing: how to install into a project
+  UPDATE.md                  # agent-facing: check for and apply updates
   COMMITS.md                 # commit message format, any language
+  scripts/check-update.sh    # read-only: is the project behind upstream?
   rust/
     REVIEW.md                # how to review Rust: style + performance
     STYLE.md                 # S-… rules
@@ -29,7 +31,7 @@ code-standards/
 git submodule add git@github.com:vincbro/code-standards.git code-standards
 ```
 
-Then ask your agent to follow `code-standards/SETUP.md`. It copies the two skills into its own skills folder (`.claude/skills/`, `.codex/skills/`, …). The copies hold no rules: they point at `code-standards/`, so bumping the submodule updates the rules everywhere. Only a change to a skill itself needs a re-copy, and `SETUP.md` says how an agent notices.
+Then ask your agent to follow `code-standards/SETUP.md`. It copies the two skills into its own skills folder (`.claude/skills/`, `.codex/skills/`, …). The copies hold no rules: they point at `code-standards/`, so bumping the submodule updates the rules everywhere. Only a change to a skill itself needs a re-copy. Every `review` checks for a newer version and offers to update (`UPDATE.md`); it never applies one on its own.
 
 Project-specific facts (the gate command, hot paths, known problems, overrides) live in the project's `STANDARDS.local.md`, never in this repo.
 
