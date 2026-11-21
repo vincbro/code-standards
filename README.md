@@ -17,6 +17,9 @@ code-standards/
   typescript/
     REVIEW.md                # how to review TypeScript
     STYLE.md                 # T-… rules
+  swift/
+    REVIEW.md                # how to review Swift
+    STYLE.md                 # W-… rules
   skills/
     review/SKILL.md          # static router: files → language REVIEW.md
     review/scope.md          # what a review argument means
@@ -44,5 +47,5 @@ The router holds no rules, so nothing else changes.
 
 ## Rules for the rules
 
-- Every rule has a permanent id (`S-…`, `P-…`), a reason and an *Enforced* line. Never renumber or reuse an id: reviews cite them.
+- Every rule has a permanent id (`S-…`, `P-…`, `T-…`, `W-…`), a reason and an *Enforced* line. Never renumber or reuse an id: reviews cite them.
 - Nothing project-specific goes in here. Examples that name a real project's types are fine as illustrations.
